@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-gujarati: var(--font-gujarati-loaded), "Noto Sans Gujarati", "Shruti",
+    "Gujarati Sangam MN", "Nirmala UI", system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+  background: #05070a;
+}
+
+body {
+  color: #ededed;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overscroll-behavior: none;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* the ground shouldn't be selectable/draggable like an image */
+svg {
+  user-select: none;
+}
