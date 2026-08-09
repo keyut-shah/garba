@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "garba",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-01",
+
+  // `next build` writes here. Assets are matched before the Worker runs, so
+  // the site is served straight from the edge and costs no Worker invocation.
+  //
+  // `run_worker_first` is the exception, and it is not optional: without it,
+  // whether /api/presence reaches the Worker or gets swallowed by
+  // not_found_handling is left to routing precedence. Pinning the one dynamic
+  // prefix makes the socket endpoint unambiguous and leaves everything else
+  // asset-first.
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+
+  "durable_objects": {
+    "bindings": [{ "name": "PRESENCE", "class_name": "Presence" }]
+  },
+
+  // SQLite-backed classes are the only kind on the free plan. Presence keeps
+  // nothing on disk, but the storage backend is still declared at creation
+  // and cannot be changed afterwards without a new class.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Presence"] }],
+
+  "observability": { "enabled": true }
+}

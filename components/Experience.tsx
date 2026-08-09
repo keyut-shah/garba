@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import CoverBackdrop from "@/components/CoverBackdrop";
 import GarbaGround from "@/components/GarbaGround";
 import NightSwitcher from "@/components/NightSwitcher";
 import PlayerCard from "@/components/PlayerCard";
 import { NIGHTS, currentNightIndex } from "@/lib/nights";
 import { TRACKS, istHourNow, startIndexForIstHour } from "@/lib/tracks";
+import { usePresence } from "@/lib/usePresence";
 import { useYouTube } from "@/lib/useYouTube";
 
 const IST = new Intl.DateTimeFormat("en-IN", {
@@ -14,29 +16,6 @@ const IST = new Intl.DateTimeFormat("en-IN", {
   minute: "2-digit",
   hour12: true,
 });
-
-/**
- * PLACEHOLDER — this number is simulated, not measured.
- * It is deterministic per IST day and climbs through the evening so it looks
- * like a real counter, but nothing is being counted. Swap this for a real
- * datastore (Cloudflare Durable Object / Upstash) before claiming it is live.
- */
-function simulatedDancers(now: Date): number {
-  const ist = new Date(now.getTime() + (330 + now.getTimezoneOffset()) * 60_000);
-  const dayKey =
-    ist.getFullYear() * 10000 + (ist.getMonth() + 1) * 100 + ist.getDate();
-  // stable per-day variation
-  let h = dayKey ^ 0x9e3779b9;
-  h = Math.imul(h ^ (h >>> 16), 2246822507);
-  h = Math.imul(h ^ (h >>> 13), 3266489909);
-  const jitter = ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-
-  const mins = ist.getHours() * 60 + ist.getMinutes();
-  // night-shaped curve: quiet by day, peaks around 1am
-  const t = ((mins - 360 + 1440) % 1440) / 1440; // 0 at 6am
-  const curve = Math.pow(t, 2.1);
-  return Math.round(900 + curve * (26000 + jitter * 9000));
-}
 
 export default function Experience() {
   const [nightIndex, setNightIndex] = useState(0);
@@ -98,7 +77,8 @@ export default function Experience() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackIndex, yt]);
 
-  const dancers = useMemo(() => (now ? simulatedDancers(now) : null), [now]);
+  // Measured, not simulated: one open socket per person on the ground.
+  const dancing = usePresence(entered);
   const time = now ? IST.formatToParts(now) : null;
   const hh = time?.find((p) => p.type === "hour")?.value ?? "";
   const mm = time?.find((p) => p.type === "minute")?.value ?? "";
@@ -110,9 +90,13 @@ export default function Experience() {
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-between overflow-hidden">
-      {/* the ground */}
+      {/* the ground: tonight's sky and the blurred cover behind, the drawn
+          scene in front of both */}
       <div className="fixed inset-0 -z-10">
-        <GarbaGround night={night} />
+        <CoverBackdrop videoId={track.id} night={night} />
+        <div className="absolute inset-0">
+          <GarbaGround night={night} />
+        </div>
       </div>
 
       {/* hidden YouTube player */}
@@ -146,7 +130,7 @@ export default function Experience() {
           />
         </span>
         <span className="tabular-nums">
-          {dancers ? dancers.toLocaleString("en-IN") : "—"}
+          {dancing !== null ? dancing.toLocaleString("en-IN") : "—"}
         </span>
         <span className="hidden text-white/60 sm:inline">dancing</span>
       </div>

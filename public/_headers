@@ -1,6 +1,9 @@
-# Cloudflare Pages headers.
+# Headers for Cloudflare static assets.
+# These apply to asset responses only — never to anything worker/index.ts
+# returns, so /api/* is unaffected by this file.
+#
 # `next build` with output:"export" writes the OG image as an extensionless
-# file, so Pages would serve it as application/octet-stream and Twitter /
+# file, so it would be served as application/octet-stream and Twitter /
 # WhatsApp would refuse to render the preview. Force the type.
 /opengraph-image
   Content-Type: image/png

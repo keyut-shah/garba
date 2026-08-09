@@ -6,15 +6,32 @@ Inspired by [saloon.wtf](https://saloon.wtf) by [@ybhrdwj](https://twitter.com/y
 
 ## How it works
 
-- **No backend.** `next build` produces a fully static site (`out/`). Nothing to
-  scale, nothing to pause under load.
+- **Almost no backend.** `next build` produces a fully static site (`out/`),
+  uploaded as a Cloudflare Worker's static assets. The only dynamic thing on
+  the site is the head count.
+- **The count is real.** `worker/presence.ts` is a Durable Object; every person
+  on the ground holds an open WebSocket to it and the number is simply how many
+  are open. Nothing is persisted — the connections *are* the state. Sockets use
+  the hibernation API, so a quiet afternoon evicts the object from memory
+  without dropping anyone.
 - **Audio is a hidden YouTube iframe.** The visible player is custom UI proxying
   to the IFrame API; the player itself is a 1px, zero-opacity div.
 - **The scene is SVG, not an image.** `components/GarbaGround.tsx` draws the
   mandap, string lights and ~92 dancers from code, so re-grading it to another
-  night's colour is free and weighs nothing. Layout uses a seeded PRNG —
-  never `Math.random()`, or server and client render different crowds and
-  React throws a hydration error.
+  night's colour is free and weighs nothing. A photographic background was
+  considered and rejected: a JPEG cannot re-grade from orange to peacock green,
+  and the nine-colour system is the whole point.
+- **The backdrop is the music.** `components/CoverBackdrop.tsx` takes the
+  current track's YouTube thumbnail, blurs it to 90px and tints it toward the
+  night's colour, so the sky changes with every song. Hotlinked at `hqdefault`
+  — it exists for every video (`maxresdefault` does not, and a miss returns a
+  grey placeholder), and resolution is irrelevant under that much blur.
+- **Two hydration hazards, not one.** The seeded PRNG covers `Math.random()`.
+  The subtler one is `Math.sin`/`Math.cos`: IEEE 754 does not require them to
+  be correctly rounded, so Node's prerender and the browser's hydration can
+  disagree in the final bit. Everything derived from trig goes through `q()` in
+  `GarbaGround.tsx` before it reaches the DOM — including the animation delays,
+  and including the values the painter's-algorithm sort compares.
 - **The night arc.** `lib/tracks.ts` tags each track with a phase and picks a
   starting point from the current hour in IST: aarti at 8pm, the Falguni hour
   around 10, non-stop past midnight.
@@ -31,6 +48,8 @@ node -e "fetch('https://www.youtube.com/watch?v=VIDEO_ID',{headers:{'user-agent'
 
 ## Before deploying
 
+**Wrangler needs Node 22+.** It will refuse to start on anything older.
+
 Set the real origin, or link previews break everywhere:
 
 ```bash
@@ -38,18 +57,41 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.example
 ```
 
 `public/_headers` forces `Content-Type: image/png` on `/opengraph-image`, which
-the static export writes without a file extension. Don't delete it.
+the static export writes without a file extension. Don't delete it. Note those
+rules apply to **assets only** — never to Worker responses.
+
+`run_worker_first: ["/api/*"]` in `wrangler.jsonc` is load-bearing. Assets are
+matched before the Worker runs, and without that carve-out it is up to routing
+precedence whether `/api/presence` reaches the Worker or gets swallowed as a
+404. Everything else stays asset-first and costs no invocation.
 
 ## Known gaps
 
-- The dancer count in `components/Experience.tsx` is **simulated**, not measured.
-  It is marked `PLACEHOLDER`. Wire it to a real store before calling it live.
+- **~167 CSS animations run at once** (92 swaying dancers, 69 flickering bulbs,
+  the drifting bokeh group, the light shafts). All opacity/transform only, and
+  all disabled under `prefers-reduced-motion`, but it is untested on a low-end
+  phone. If it stutters, the dancers are the ones to cut.
+- **Redeploying does not update a live Durable Object.** A running instance
+  keeps its old code until it shuts down, so a fix can look like it failed if
+  you reconnect immediately. Wait it out before concluding anything.
+- **One Durable Object holds everyone**, so the count is global but so is the
+  ceiling — a single object has a soft limit of ~1,000 req/s, and every join or
+  leave fans out a message to all open sockets. Fine for a society ground;
+  shard into N objects behind an aggregator if it ever gets famous.
+- The count is only visible **after** you tap in, because joining is what opens
+  the socket. Showing "847 already dancing" on the gate would need a read-only
+  connection before entry.
 - No crossfade between tracks yet (~1s gap).
 - One generic murti; the nine distinct goddess forms are not done.
 
 ## Commands
 
 ```bash
-npm run dev     # localhost:3000
-npm run build   # static export to out/
+npm run dev       # localhost:3000 — no Worker, so the count reads "—"
+npm run preview   # build + wrangler dev — the real thing, count included
+npm run deploy    # build + wrangler deploy
+npm run typecheck # app and worker are separate TS projects
 ```
+
+`next dev` serves no Worker, so `/api/presence` 404s and the number stays a dash.
+Use `npm run preview` to see it move — open two tabs and watch it count.

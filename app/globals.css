@@ -31,3 +31,104 @@ body {
 svg {
   user-select: none;
 }
+
+/* ---------------------------------------------------------------------------
+   The ground in motion.
+
+   Every animation here is opacity or transform only — no property that forces
+   layout — because ~90 dancers animate at once. Each element carries its own
+   --dur and --delay so the crowd never moves in lockstep; both are derived
+   from the dancer's position rather than a counter, so they stay identical
+   between the prerender and the browser.
+   --------------------------------------------------------------------------- */
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-1.7deg) translateY(0);
+  }
+  50% {
+    transform: rotate(1.7deg) translateY(-1.5px);
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  42% {
+    opacity: 0.58;
+  }
+  63% {
+    opacity: 1;
+  }
+  81% {
+    opacity: 0.74;
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-14px, -10px, 0);
+  }
+}
+
+@keyframes shaft {
+  0%,
+  100% {
+    opacity: 0.14;
+  }
+  50% {
+    opacity: 0.32;
+  }
+}
+
+@keyframes coverIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dancer,
+.bokeh,
+.shafts {
+  /* rotate about the feet, not the SVG origin */
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.dancer {
+  animation: sway var(--dur, 4s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.bulb {
+  animation: flicker var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* one animated element for all 46, rather than 46 of them */
+.bokeh {
+  animation: drift 26s ease-in-out infinite;
+}
+
+.shafts {
+  animation: shaft 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dancer,
+  .bulb,
+  .bokeh,
+  .shafts {
+    animation: none;
+  }
+}

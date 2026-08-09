@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Night } from "@/lib/nights";
 
 /* Deterministic PRNG — the scene must render identically on server and client
@@ -10,6 +11,20 @@ function mulberry32(seed: number) {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+/* The other hydration hazard, and a subtler one than Math.random.
+   IEEE 754 does not require Math.sin/Math.cos to be correctly rounded, so Node
+   — which prerenders the static export — and the browser that hydrates it can
+   disagree in the final bit: 595.774165544919 against 595.7741655449191. React
+   flags every dancer for it. Snapping to a fixed grid makes both engines emit
+   the same string. Only trig needs this; mulberry32 is integer maths over a
+   power-of-two divisor and the bezier is multiply-add, both bit-identical
+   everywhere. Three decimals is a thousandth of a viewBox unit — far below a
+   pixel at any real size. */
+const GRID = 1000;
+function q(n: number): number {
+  return Math.round(n * GRID) / GRID;
 }
 
 const W = 1600;
@@ -49,6 +64,9 @@ type Placed = {
   pose: 0 | 1;
   opacity: number;
   tint: string;
+  /** seconds — staggers the sway so the crowd isn't a chorus line */
+  delay: number;
+  dur: number;
 };
 
 /** Lay dancers around concentric ellipses — the garba circle, seen at a slight tilt. */
@@ -66,23 +84,30 @@ function buildRings(night: Night): Placed[] {
     for (let i = 0; i < ring.count; i++) {
       // jitter the angle so it reads as a crowd, not a clock face
       const a = ((i + rnd() * 0.55 - 0.275) / ring.count) * Math.PI * 2;
-      const x = CX + ring.rx * Math.cos(a);
-      const y = ring.cy + ring.ry * Math.sin(a);
+      const x = q(CX + ring.rx * Math.cos(a));
+      const y = q(ring.cy + ring.ry * Math.sin(a));
       // figures at the front of the ellipse (sin ~ 1) sit closer to camera
-      const depth = (Math.sin(a) + 1) / 2;
-      const scale = ring.base * (0.82 + depth * 0.36) * (0.93 + rnd() * 0.14);
+      const depth = q((Math.sin(a) + 1) / 2);
+      const scale = q(ring.base * (0.82 + depth * 0.36) * (0.93 + rnd() * 0.14));
       out.push({
         x,
         y,
         scale,
         pose: rnd() > 0.45 ? 0 : 1,
-        opacity: ring.backlit ? 0.55 + depth * 0.25 : 0.78 + depth * 0.22,
+        opacity: q(ring.backlit ? 0.55 + depth * 0.25 : 0.78 + depth * 0.22),
         tint: ring.backlit ? night.glow : "#05070a",
+        // Read off the position instead of drawing from rnd(), so adding the
+        // sway did not reshuffle the arrangement that was already there.
+        delay: q(Math.abs((x * 31 + y * 17) % 3.6)),
+        dur: q(3.4 + Math.abs((x * 13 + y * 29) % 1.8)),
       });
     }
   }
-  // painter's algorithm: back of the ground first
-  return out.sort((p, q) => p.y - q.y);
+  // Painter's algorithm: back of the ground first. This is the second reason
+  // to quantise above rather than at render time — two dancers a single ULP
+  // apart could otherwise sort one way on the server and the other way in the
+  // browser, swapping which pose lands on which key.
+  return out.sort((p, r) => p.y - r.y);
 }
 
 /** Points along a quadratic bezier, for hanging bulbs on a sagging wire. */
@@ -125,11 +150,31 @@ export default function GarbaGround({ night }: { night: Night }) {
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={night.sky[0]} />
-          <stop offset="70%" stopColor={night.sky[1]} />
-          <stop offset="100%" stopColor={night.sky[0]} />
+        {/* No sky rect here any more — CoverBackdrop paints the sky in CSS so
+            the blurred album art can sit behind this scene. Everything the SVG
+            draws from here down is translucent over it. */}
+
+        <linearGradient id="shaft" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={night.accent} stopOpacity="0.55" />
+          <stop offset="100%" stopColor={night.accent} stopOpacity="0" />
         </linearGradient>
+
+        <radialGradient id="haze" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={night.glow} stopOpacity="0.30" />
+          <stop offset="100%" stopColor={night.glow} stopOpacity="0" />
+        </radialGradient>
+
+        {/* Film grain. feTurbulence is evaluated once and reused, so this is a
+            one-off cost rather than a per-frame one — never animate it. */}
+        <filter id="grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.85"
+            numOctaves={2}
+            stitchTiles="stitch"
+          />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
 
         <radialGradient id="centreGlow" cx="50%" cy="58%" r="52%">
           <stop offset="0%" stopColor={night.glow} stopOpacity="0.62" />
@@ -168,10 +213,8 @@ export default function GarbaGround({ night }: { night: Night }) {
         </symbol>
       </defs>
 
-      <rect width={W} height={H} fill="url(#sky)" />
-
       {/* distant bokeh — other grounds, streetlights, the city behind */}
-      <g>
+      <g className="bokeh">
         {Array.from({ length: 46 }).map((_, i) => {
           const x = rnd() * W;
           const y = 80 + rnd() * 380;
@@ -230,15 +273,51 @@ export default function GarbaGround({ night }: { night: Night }) {
         <circle cx={CX + 118} cy={GROUND_Y - 90} r={7} fill={night.accent} opacity="0.85" />
       </g>
 
+      {/* ---- light shafts off the mandap ----
+           Deliberately hand-placed integers rather than a trig fan: constants
+           through Math.tan would reintroduce exactly the cross-engine rounding
+           that `q` exists to kill. */}
+      <g className="shafts" style={{ mixBlendMode: "screen" }}>
+        {[
+          [-232, -128],
+          [-96, -34],
+          [-12, 34],
+          [74, 148],
+          [196, 306],
+        ].map(([a, b], i) => (
+          <polygon
+            key={i}
+            points={`${CX + a * 3} -40, ${CX + b * 3} -40, ${CX + 14} ${GROUND_Y - 208}, ${CX - 14} ${GROUND_Y - 208}`}
+            fill="url(#shaft)"
+          />
+        ))}
+      </g>
+
+      {/* ---- haze sitting on the ground, so the crowd has air around it ---- */}
+      <g>
+        <ellipse cx={CX} cy={GROUND_Y - 20} rx={760} ry={120} fill="url(#haze)" />
+        <ellipse cx={CX - 380} cy={GROUND_Y + 60} rx={420} ry={80} fill="url(#haze)" opacity="0.6" />
+        <ellipse cx={CX + 400} cy={GROUND_Y + 50} rx={440} ry={86} fill="url(#haze)" opacity="0.55" />
+      </g>
+
       {/* ---- string lights ---- */}
       <g>
         {wires.map((w, wi) => (
           <g key={wi}>
             <path d={w.d} fill="none" stroke="#05070a" strokeWidth="2.5" opacity="0.55" />
             {w.pts.map(([x, y], i) => (
-              <g key={i}>
-                <circle cx={x} cy={y + 7} r={13} fill="url(#bulbGlow)" opacity="0.5" />
-                <circle cx={x} cy={y + 7} r={3.4} fill={night.accent} opacity="0.95" />
+              <g
+                key={i}
+                className="bulb"
+                style={
+                  {
+                    "--delay": `${q(Math.abs((x * 7 + y * 11 + wi * 3) % 2.9))}s`,
+                    "--dur": `${q(2.4 + Math.abs((x * 5 + y * 3) % 1.6))}s`,
+                  } as CSSProperties
+                }
+              >
+                <circle cx={q(x)} cy={q(y + 7)} r={13} fill="url(#bulbGlow)" opacity="0.5" />
+                <circle cx={q(x)} cy={q(y + 7)} r={3.4} fill={night.accent} opacity="0.95" />
               </g>
             ))}
           </g>
@@ -250,11 +329,18 @@ export default function GarbaGround({ night }: { night: Night }) {
         {dancers.map((d, i) => (
           <use
             key={i}
+            className="dancer"
+            style={
+              { "--delay": `${d.delay}s`, "--dur": `${d.dur}s` } as CSSProperties
+            }
             href={d.pose === 0 ? "#dancer" : "#dancerB"}
-            x={d.x - 20 * d.scale}
-            y={d.y - 70 * d.scale}
-            width={40 * d.scale}
-            height={70 * d.scale}
+            // Deterministic already, since everything feeding these is on the
+            // grid and multiply-subtract is exact. Quantised anyway so the
+            // attribute reads 1035.895 rather than 1035.8949999999998.
+            x={q(d.x - 20 * d.scale)}
+            y={q(d.y - 70 * d.scale)}
+            width={q(40 * d.scale)}
+            height={q(70 * d.scale)}
             fill={d.tint}
             opacity={d.opacity}
           />
@@ -262,6 +348,16 @@ export default function GarbaGround({ night }: { night: Night }) {
       </g>
 
       <rect width={W} height={H} fill="url(#vignette)" />
+
+      {/* Grain last, over everything, so the blurred cover behind and the
+          vector scene in front share one texture and read as a single image. */}
+      <rect
+        width={W}
+        height={H}
+        filter="url(#grain)"
+        opacity="0.045"
+        style={{ mixBlendMode: "overlay" }}
+      />
     </svg>
   );
 }
