@@ -25,6 +25,13 @@ export const TRACKS: Track[] = [
     phase: "traditional",
   },
   {
+    id: "Tfjoyp0g5HA",
+    title: "Dholi Taaro Dhol Baaje",
+    artist: "Kavita Krishnamurthy, Vinod Rathod & Karsan Sagthiya",
+    seconds: 371,
+    phase: "traditional",
+  },
+  {
     id: "xJsvTCMg0qA",
     title: "Mor Bani Thanghat Kare",
     artist: "Osman Mir & Aditi Paul",
@@ -32,43 +39,27 @@ export const TRACKS: Track[] = [
     phase: "traditional",
   },
   {
-    id: "-Fk3RK2V27M",
-    title: "Ke Hove Hove",
-    artist: "Atul Purohit & Himali Vora",
-    seconds: 328,
-    phase: "traditional",
-  },
-  {
-    id: "fjQRohT_LFw",
-    title: "Moti Veraana",
-    artist: "Amit Trivedi feat. Osman Mir",
-    seconds: 261,
+    id: "jXhJMrAkkqM",
+    title: "Dholida Dhol Re Vagade",
+    artist: "Traditional Garba",
+    seconds: 502,
     phase: "traditional",
   },
 
   // --- Falguni: peak nostalgia, ~10pm ---
-  // All-Gujarati now — the two Hindi Falguni Pathak tracks are gone, and this
-  // hour opens with four different singers instead of the same one three
-  // times running.
+  // Sanedo splits the two Geeta Rabari tracks so she doesn't open back-to-back.
+  {
+    id: "5MMqwxJ3VBY",
+    title: "Tetudo 2",
+    artist: "Geeta Rabari & Rahul Munjariya",
+    seconds: 280,
+    phase: "falguni",
+  },
   {
     id: "2l-JHpsRVJE",
     title: "Sanedo",
     artist: "Jignesh Barot, Maniraj Barot & Parth Thakkar",
     seconds: 464,
-    phase: "falguni",
-  },
-  {
-    id: "ccqg6e2rfLU",
-    title: "Gori Radha Ne Kalo Kaan",
-    artist: "Kirtidan Gadhvi",
-    seconds: 178,
-    phase: "falguni",
-  },
-  {
-    id: "rdDe6VWP-9s",
-    title: "Kesariyo Rang Tane Lagyo",
-    artist: "Falguni Pathak",
-    seconds: 743,
     phase: "falguni",
   },
   {
@@ -80,18 +71,6 @@ export const TRACKS: Track[] = [
   },
 
   // --- non-stop: past midnight, nobody is sitting down ---
-  // Chogada and Nagada Sang Dhol (the old "everyone knows this one" phase)
-  // and Kamariya are gone — all three were Hindi film songs, and nobody at an
-  // actual garba is dancing to Bollywood. This block now covers the whole
-  // stretch from midnight on. Kinjal Dave and Jigardan Gadhavi each get two
-  // tracks here, kept apart so neither singer repeats back-to-back.
-  {
-    id: "Fi7fxozoDPY",
-    title: "Aangadiye Aavo",
-    artist: "Aditya Gadhvi & Bhoomi Trivedi",
-    seconds: 252,
-    phase: "nonstop",
-  },
   {
     id: "NpiD70ZrZTc",
     title: "Vichudo",
@@ -104,13 +83,6 @@ export const TRACKS: Track[] = [
     title: "Ramo Re",
     artist: "Jigardan Gadhavi, Janki Bodiwala & Kavya Limaye",
     seconds: 230,
-    phase: "nonstop",
-  },
-  {
-    id: "Gdgm79jAa3I",
-    title: "Char Char Bangdi Vali Gadi",
-    artist: "Kinjal Dave",
-    seconds: 300,
     phase: "nonstop",
   },
   {
