@@ -26,8 +26,12 @@ export default function NightSwitcher({
         </div>
       </div>
 
+      {/* The dots were 22x22 hit areas — under a quarter of the 44x44 that both
+          WCAG and the platform guidelines ask for, nine of them side by side.
+          The visible dot is unchanged; only the tappable box grew, so the row
+          looks the same and stops fighting your thumb. */}
       <div
-        className="flex items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur-md"
+        className="flex items-center gap-0 rounded-full bg-black/25 px-2 py-1 backdrop-blur-md"
         role="tablist"
         aria-label="Choose a night of Navratri"
       >
@@ -42,7 +46,7 @@ export default function NightSwitcher({
               title={`Night ${nt.n} · ${nt.colour} · ${nt.goddess}`}
               onClick={() => onChange(i)}
               className="group relative grid place-items-center outline-none"
-              style={{ width: 22, height: 22 }}
+              style={{ width: 32, height: 44 }}
             >
               <span
                 className="block rounded-full transition-all duration-300 ease-out group-hover:scale-110 group-focus-visible:ring-2 group-focus-visible:ring-white/80"

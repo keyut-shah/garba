@@ -13,7 +13,13 @@ Inspired by [saloon.wtf](https://saloon.wtf) by [@ybhrdwj](https://twitter.com/y
   on the ground holds an open WebSocket to it and the number is simply how many
   are open. Nothing is persisted — the connections *are* the state. Sockets use
   the hibernation API, so a quiet afternoon evicts the object from memory
-  without dropping anyone.
+  without dropping anyone. There is no gate to pass, so being on the page is
+  what counts.
+- **No enter gate.** The ground is there on load. The gate only ever existed
+  because browsers refuse to start audio without a user gesture, so instead the
+  attempt is made on load and, if refused, again on the first gesture anywhere
+  — any tap doubles as the tap that starts the music. Don't reintroduce a
+  blocking overlay to "fix" silent autoplay; that is what this replaced.
 - **Audio is a hidden YouTube iframe.** The visible player is custom UI proxying
   to the IFrame API; the player itself is a 1px, zero-opacity div.
 - **The scene is SVG, not an image.** `components/GarbaGround.tsx` draws the
@@ -78,9 +84,13 @@ precedence whether `/api/presence` reaches the Worker or gets swallowed as a
   ceiling — a single object has a soft limit of ~1,000 req/s, and every join or
   leave fans out a message to all open sockets. Fine for a society ground;
   shard into N objects behind an aggregator if it ever gets famous.
-- The count is only visible **after** you tap in, because joining is what opens
-  the socket. Showing "847 already dancing" on the gate would need a read-only
-  connection before entry.
+- **The count now includes people who never started the music**, since loading
+  the page opens the socket. It reads "dancing", which is a slight stretch for
+  a forgotten background tab.
+- Night dots are 32x44 hit areas with a 9-15px visible dot; swipe (and arrow
+  keys) change nights. `lib/useSwipe.ts` ignores anything inside
+  `[data-no-swipe]` — the player card carries that marker because the seek bar
+  is a plain div, and scrubbing would otherwise swipe the night away.
 - No crossfade between tracks yet (~1s gap).
 - One generic murti; the nine distinct goddess forms are not done.
 

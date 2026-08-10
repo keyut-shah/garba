@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Backdrop, { type ArtState } from "@/components/Backdrop";
 import GarbaGround from "@/components/GarbaGround";
 import NightSwitcher from "@/components/NightSwitcher";
@@ -8,6 +8,7 @@ import PlayerCard from "@/components/PlayerCard";
 import { NIGHTS, currentNightIndex } from "@/lib/nights";
 import { TRACKS, istHourNow, startIndexForIstHour } from "@/lib/tracks";
 import { usePresence } from "@/lib/usePresence";
+import { useSwipe } from "@/lib/useSwipe";
 import { useYouTube } from "@/lib/useYouTube";
 
 const IST = new Intl.DateTimeFormat("en-IN", {
@@ -20,9 +21,12 @@ const IST = new Intl.DateTimeFormat("en-IN", {
 export default function Experience() {
   const [nightIndex, setNightIndex] = useState(0);
   const [trackIndex, setTrackIndex] = useState(0);
-  const [entered, setEntered] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
+  /** Drives the "tap for sound" nudge; a ref alone wouldn't re-render. */
+  const [everPlayed, setEverPlayed] = useState(false);
   const [art, setArt] = useState<ArtState>("unknown");
+  /** Drops the swipe hint once they've changed a night by any means. */
+  const [nudged, setNudged] = useState(false);
 
   const night = NIGHTS[nightIndex];
   const track = TRACKS[trackIndex];
@@ -30,6 +34,30 @@ export default function Experience() {
   const go = useCallback((delta: number) => {
     setTrackIndex((i) => (i + delta + TRACKS.length) % TRACKS.length);
   }, []);
+
+  // Nine dots is a poor thumb target, so the night is swipeable too. Wrapping
+  // rather than clamping keeps a swipe from ever feeling like it did nothing.
+  const goNight = useCallback((delta: number) => {
+    setNightIndex((i) => (i + delta + NIGHTS.length) % NIGHTS.length);
+    setNudged(true);
+  }, []);
+
+  const pickNight = useCallback((i: number) => {
+    setNightIndex(i);
+    setNudged(true);
+  }, []);
+
+  useSwipe(goNight);
+
+  // The same move for anyone on a keyboard.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") goNight(1);
+      else if (e.key === "ArrowLeft") goNight(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [goNight]);
 
   const yt = useYouTube({
     firstVideoId: TRACKS[0].id,
@@ -71,15 +99,44 @@ export default function Experience() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackIndex, yt.ready]);
 
-  const enter = useCallback(() => {
-    setEntered(true);
+  /**
+   * No gate: the ground is there the moment the page loads.
+   *
+   * The gate existed for one reason — browsers refuse to start audio without a
+   * user gesture, and tapping it supplied one. So the attempt is made anyway
+   * on load (it succeeds where the browser already trusts the origin) and, if
+   * it was refused, again on the first gesture anywhere on the page. A tap
+   * meant for anything at all doubles as the tap that starts the music.
+   */
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (!yt.ready) return;
     yt.load(TRACKS[trackIndex].id);
     yt.play();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackIndex, yt]);
+  }, [yt.ready]);
 
-  // Measured, not simulated: one open socket per person on the ground.
-  const dancing = usePresence(entered);
+  useEffect(() => {
+    if (!yt.playing) return;
+    started.current = true;
+    setEverPlayed(true);
+  }, [yt.playing]);
+
+  useEffect(() => {
+    const kick = () => {
+      // Only ever the first one. Past that, a pause is a decision, and
+      // restarting the music under someone would be obnoxious.
+      if (started.current) return;
+      yt.play();
+    };
+    window.addEventListener("pointerdown", kick);
+    return () => window.removeEventListener("pointerdown", kick);
+  }, [yt]);
+
+  // Measured, not simulated: one open socket per person on the ground. Without
+  // a gate to pass, being here is what counts.
+  const dancing = usePresence(true);
   const time = now ? IST.formatToParts(now) : null;
   const hh = time?.find((p) => p.type === "hour")?.value ?? "";
   const mm = time?.find((p) => p.type === "minute")?.value ?? "";
@@ -166,7 +223,12 @@ export default function Experience() {
 
       {/* ---------- bottom ---------- */}
       <div className="mb-[5vh] flex w-full flex-col items-center gap-5 px-4 sm:mb-[6vh] sm:px-6">
-        <NightSwitcher index={nightIndex} onChange={setNightIndex} />
+        <NightSwitcher index={nightIndex} onChange={pickNight} />
+        {!nudged && (
+          <p className="-mt-3 text-[10px] font-medium uppercase tracking-[0.22em] text-white/50 [text-shadow:0_1px_3px_rgba(0,0,0,0.95)] sm:hidden">
+            swipe to change night
+          </p>
+        )}
         <PlayerCard
           track={track}
           progress={yt.progress}
@@ -181,25 +243,14 @@ export default function Experience() {
         />
       </div>
 
-      {/* ---------- enter gate (browsers block autoplay with sound) ---------- */}
-      {!entered && (
-        <button
-          onClick={enter}
-          className="fixed inset-0 z-50 flex cursor-pointer flex-col items-center justify-center gap-5 bg-black/65 backdrop-blur-sm transition"
-          aria-label="Enter the garba ground"
-        >
-          <span
-            className="grid h-20 w-20 place-items-center rounded-full bg-white text-black shadow-2xl transition hover:scale-105"
-            style={{ boxShadow: `0 0 60px ${night.glow}` }}
-          >
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M8 5v14l11-7z" />
-            </svg>
+      {/* Shown only until sound has ever started, and pointer-events-none so it
+          can never swallow the very tap it is asking for. */}
+      {yt.ready && !everPlayed && (
+        <div className="pointer-events-none fixed inset-x-0 top-1/2 z-20 -translate-y-1/2 text-center">
+          <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-white/70 [text-shadow:0_1px_3px_rgba(0,0,0,0.95)]">
+            tap anywhere for sound
           </span>
-          <span className="text-sm font-medium uppercase tracking-[0.28em] text-white/85">
-            enter the ground
-          </span>
-        </button>
+        </div>
       )}
     </main>
   );

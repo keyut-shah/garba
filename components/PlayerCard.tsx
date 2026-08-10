@@ -45,7 +45,9 @@ export default function PlayerCard({
   }
 
   return (
-    <div className="w-full max-w-xl">
+    /* data-no-swipe: the seek bar is a plain div, so without this marker
+       scrubbing a track would also swipe the night out from under you. */
+    <div className="w-full max-w-xl" data-no-swipe>
       <div className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-black/35 p-3 backdrop-blur-xl sm:gap-4 sm:p-3.5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
