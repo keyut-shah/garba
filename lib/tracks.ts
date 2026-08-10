@@ -2,7 +2,7 @@
 // AND playableInEmbed=true. If you add a track, verify it the same way or the
 // player silently dies on that entry.
 
-export type Phase = "aarti" | "traditional" | "falguni" | "bollywood" | "nonstop";
+export type Phase = "aarti" | "traditional" | "falguni" | "nonstop";
 
 export type Track = {
   id: string;
@@ -23,18 +23,20 @@ export const TRACKS: Track[] = [
   },
 
   // --- traditional taali garba: the slow build ---
+  // Reordered so the same singer never opens back-to-back — Atul Purohit had
+  // two in a row.
+  {
+    id: "9SqGPYaZlk4",
+    title: "Garbo Maa No Ghumto Aayo",
+    artist: "Rakesh Barot",
+    seconds: 344,
+    phase: "traditional",
+  },
   {
     id: "6MpjP4w8Gtk",
     title: "Tara Vina Shyam",
     artist: "Atul Purohit",
     seconds: 438,
-    phase: "traditional",
-  },
-  {
-    id: "-Fk3RK2V27M",
-    title: "Ke Hove Hove",
-    artist: "Atul Purohit & Himali Vora",
-    seconds: 328,
     phase: "traditional",
   },
   {
@@ -45,28 +47,22 @@ export const TRACKS: Track[] = [
     phase: "traditional",
   },
   {
-    id: "9SqGPYaZlk4",
-    title: "Garbo Maa No Ghumto Aayo",
-    artist: "Rakesh Barot",
-    seconds: 344,
+    id: "-Fk3RK2V27M",
+    title: "Ke Hove Hove",
+    artist: "Atul Purohit & Himali Vora",
+    seconds: 328,
     phase: "traditional",
   },
 
   // --- Falguni: peak nostalgia, ~10pm ---
-  // Trimmed to the two most-requested Hindi ones plus tonight's Gujarati one —
-  // this hour was skewing the whole night's language mix on its own.
+  // All-Gujarati now — the two Hindi Falguni Pathak tracks are gone, and this
+  // hour opens with three different singers instead of the same one three
+  // times running.
   {
-    id: "0tjVtYtZ384",
-    title: "Maine Payal Hai Chhankai",
-    artist: "Falguni Pathak",
-    seconds: 274,
-    phase: "falguni",
-  },
-  {
-    id: "Xna3I11v9Vs",
-    title: "Chudi Jo Khanke",
-    artist: "Falguni Pathak",
-    seconds: 228,
+    id: "ccqg6e2rfLU",
+    title: "Gori Radha Ne Kalo Kaan",
+    artist: "Kirtidan Gadhvi",
+    seconds: 178,
     phase: "falguni",
   },
   {
@@ -76,31 +72,24 @@ export const TRACKS: Track[] = [
     seconds: 743,
     phase: "falguni",
   },
-
-  // --- bollywood garba: everyone knows the steps ---
-  // Down to the two nobody would forgive skipping. This phase was 100% Hindi
-  // film music by definition — kept small on purpose.
   {
-    id: "3X7x4Ye-tqo",
-    title: "Nagada Sang Dhol",
-    artist: "Shreya Ghoshal & Osman Mir",
-    seconds: 271,
-    phase: "bollywood",
-  },
-  {
-    id: "yr7JFNsz5dU",
-    title: "Chogada",
-    artist: "Darshan Raval & Asees Kaur",
-    seconds: 275,
-    phase: "bollywood",
+    id: "Te-1fu0UdQE",
+    title: "Galgoto Me Zukine Lidho",
+    artist: "Geeta Rabari",
+    seconds: 619,
+    phase: "falguni",
   },
 
   // --- non-stop: past midnight, nobody is sitting down ---
+  // Chogada and Nagada Sang Dhol (the old "everyone knows this one" phase)
+  // and Kamariya are gone — all three were Hindi film songs, and nobody at an
+  // actual garba is dancing to Bollywood. This block now covers the whole
+  // stretch from midnight on.
   {
-    id: "i0_m90T04uw",
-    title: "Kamariya",
-    artist: "Darshan Raval & Ikka",
-    seconds: 187,
+    id: "Fi7fxozoDPY",
+    title: "Aangadiye Aavo",
+    artist: "Aditya Gadhvi & Bhoomi Trivedi",
+    seconds: 252,
     phase: "nonstop",
   },
   {
@@ -111,24 +100,17 @@ export const TRACKS: Track[] = [
     phase: "nonstop",
   },
   {
-    id: "t7wSjy9Lv-o",
-    title: "Khalasi",
-    artist: "Aditya Gadhvi x Achint",
-    seconds: 264,
-    phase: "nonstop",
-  },
-  {
-    id: "Fi7fxozoDPY",
-    title: "Aangadiye Aavo",
-    artist: "Aditya Gadhvi & Bhoomi Trivedi",
-    seconds: 252,
-    phase: "nonstop",
-  },
-  {
     id: "9n7tWwa77mY",
     title: "Ramo Re",
     artist: "Jigardan Gadhavi, Janki Bodiwala & Kavya Limaye",
     seconds: 230,
+    phase: "nonstop",
+  },
+  {
+    id: "t7wSjy9Lv-o",
+    title: "Khalasi",
+    artist: "Aditya Gadhvi x Achint",
+    seconds: 264,
     phase: "nonstop",
   },
 ];
@@ -137,7 +119,6 @@ export const PHASE_LABEL: Record<Phase, string> = {
   aarti: "Aarti",
   traditional: "Taali garba",
   falguni: "The Falguni hour",
-  bollywood: "Everyone knows this one",
   nonstop: "Non-stop",
 };
 
@@ -154,8 +135,7 @@ export function phaseForIstHour(hour: number): Phase {
   if (hour >= 20 && hour < 21) return "aarti";
   if (hour >= 21 && hour < 22) return "traditional";
   if (hour >= 22 && hour < 24) return "falguni";
-  if (hour >= 0 && hour < 2) return "bollywood";
-  if (hour >= 2 && hour < 5) return "nonstop";
+  if (hour >= 0 && hour < 5) return "nonstop";
   return "falguni"; // daytime: drop them straight into the good stuff
 }
 
