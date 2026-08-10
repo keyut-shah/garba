@@ -42,6 +42,11 @@ yarn-error.log*
 # local preview artefact generated from the live render
 /preview-nights.html
 
+# Source artwork. Multi-MB PNGs out of which public/background.webp is built —
+# kept locally, not worth carrying in the repo. Drop this line if you'd rather
+# version the originals.
+/design/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

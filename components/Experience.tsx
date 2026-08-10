@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import CoverBackdrop from "@/components/CoverBackdrop";
+import Backdrop, { type ArtState } from "@/components/Backdrop";
 import GarbaGround from "@/components/GarbaGround";
 import NightSwitcher from "@/components/NightSwitcher";
 import PlayerCard from "@/components/PlayerCard";
@@ -22,6 +22,7 @@ export default function Experience() {
   const [trackIndex, setTrackIndex] = useState(0);
   const [entered, setEntered] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
+  const [art, setArt] = useState<ArtState>("unknown");
 
   const night = NIGHTS[nightIndex];
   const track = TRACKS[trackIndex];
@@ -90,12 +91,12 @@ export default function Experience() {
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-between overflow-hidden">
-      {/* the ground: tonight's sky and the blurred cover behind, the drawn
-          scene in front of both */}
+      {/* The ground. With a hero illustration the drawn scene pulls back to
+          just the nearest silhouettes; without one it is the whole picture. */}
       <div className="fixed inset-0 -z-10">
-        <CoverBackdrop videoId={track.id} night={night} />
+        <Backdrop videoId={track.id} night={night} onArt={setArt} />
         <div className="absolute inset-0">
-          <GarbaGround night={night} />
+          <GarbaGround night={night} foregroundOnly={art === "present"} />
         </div>
       </div>
 
@@ -158,7 +159,7 @@ export default function Experience() {
         >
           ગરબા
         </h1>
-        <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.32em] text-white/60 sm:text-xs">
+        <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.32em] text-white/80 [text-shadow:0_1px_3px_rgba(0,0,0,0.95),0_2px_16px_rgba(0,0,0,0.85)] sm:text-xs">
           nine nights · nine colours
         </p>
       </div>

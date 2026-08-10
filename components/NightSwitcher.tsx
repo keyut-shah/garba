@@ -13,11 +13,15 @@ export default function NightSwitcher({
 
   return (
     <div className="flex flex-col items-center gap-2.5">
-      <div className="text-center leading-tight">
-        <div className="text-[13px] font-semibold tracking-wide text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)]">
+      {/* A soft shadow was enough over the drawn scene, but this text now sits
+          on a lit, busy illustration. Two shadows — one tight for edge contrast,
+          one wide for a halo — keep it readable without a slab of black behind
+          it dimming the artwork. */}
+      <div className="text-center leading-tight [text-shadow:0_1px_3px_rgba(0,0,0,0.95),0_2px_16px_rgba(0,0,0,0.85)]">
+        <div className="text-[13px] font-semibold tracking-wide text-white">
           Night {night.n} · {night.colour}
         </div>
-        <div className="text-[11px] text-white/55">
+        <div className="text-[11px] text-white/75">
           {night.goddess} · {night.date}
         </div>
       </div>

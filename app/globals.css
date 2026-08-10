@@ -12,6 +12,14 @@
 html,
 body {
   height: 100%;
+}
+
+/* The base colour belongs on the root element only, where it propagates to the
+   canvas. Giving body a background as well paints an opaque box over the
+   scene: the backdrop is `fixed inset-0 -z-10`, and within a stacking context
+   negative z-index layers paint before in-flow block backgrounds. The ground
+   rendered correctly and was then covered by this exact rule. */
+html {
   background: #05070a;
 }
 

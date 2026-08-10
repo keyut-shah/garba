@@ -12,3 +12,8 @@
 # Content-hashed — safe to cache forever.
 /_next/static/*
   Cache-Control: public, max-age=31536000, immutable
+
+# The artwork is not content-hashed, so a day rather than a year: swapping it
+# shouldn't leave anyone who has already visited staring at the old one.
+/background.webp
+  Cache-Control: public, max-age=86400

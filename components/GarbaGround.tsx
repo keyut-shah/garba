@@ -67,6 +67,8 @@ type Placed = {
   /** seconds — staggers the sway so the crowd isn't a chorus line */
   delay: number;
   dur: number;
+  /** 0 is the far ring, 3 the one nearest the camera */
+  ring: number;
 };
 
 /** Lay dancers around concentric ellipses — the garba circle, seen at a slight tilt. */
@@ -80,7 +82,8 @@ function buildRings(night: Night): Placed[] {
   ];
 
   const out: Placed[] = [];
-  for (const ring of rings) {
+  for (let ri = 0; ri < rings.length; ri++) {
+    const ring = rings[ri];
     for (let i = 0; i < ring.count; i++) {
       // jitter the angle so it reads as a crowd, not a clock face
       const a = ((i + rnd() * 0.55 - 0.275) / ring.count) * Math.PI * 2;
@@ -100,6 +103,7 @@ function buildRings(night: Night): Placed[] {
         // sway did not reshuffle the arrangement that was already there.
         delay: q(Math.abs((x * 31 + y * 17) % 3.6)),
         dur: q(3.4 + Math.abs((x * 13 + y * 29) % 1.8)),
+        ring: ri,
       });
     }
   }
@@ -129,8 +133,22 @@ function bezierPoints(
   return pts;
 }
 
-export default function GarbaGround({ night }: { night: Night }) {
-  const dancers = buildRings(night);
+/**
+ * `foregroundOnly` is for when a hero illustration is behind this. That
+ * picture already has a lit ground, a stage and a crowd of its own, so drawing
+ * ours over the top would read as two crowds. Instead we keep only the ring
+ * nearest the camera, as dark silhouettes — the few rows you'd be standing
+ * behind — which gives the illustration depth rather than competing with it.
+ */
+export default function GarbaGround({
+  night,
+  foregroundOnly = false,
+}: {
+  night: Night;
+  foregroundOnly?: boolean;
+}) {
+  const all = buildRings(night);
+  const dancers = foregroundOnly ? all.filter((d) => d.ring === 3) : all;
   const rnd = mulberry32(7);
 
   const wires: { d: string; pts: [number, number][] }[] = [
@@ -213,6 +231,12 @@ export default function GarbaGround({ night }: { night: Night }) {
         </symbol>
       </defs>
 
+      {/* Everything from here to the dancers is the ground we draw ourselves.
+          An illustration supplies all of it, so it is skipped entirely rather
+          than blended — two stages and two sets of string lights never look
+          like depth, only like a mistake. */}
+      {!foregroundOnly && (
+        <>
       {/* distant bokeh — other grounds, streetlights, the city behind */}
       <g className="bokeh">
         {Array.from({ length: 46 }).map((_, i) => {
@@ -324,6 +348,9 @@ export default function GarbaGround({ night }: { night: Night }) {
         ))}
       </g>
 
+        </>
+      )}
+
       {/* ---- the circle ---- */}
       <g>
         {dancers.map((d, i) => (
@@ -347,7 +374,9 @@ export default function GarbaGround({ night }: { night: Night }) {
         ))}
       </g>
 
-      <rect width={W} height={H} fill="url(#vignette)" />
+      {/* Skipped when an illustration is behind us: Backdrop lays down its own
+          scrim there, and stacking both crushes the picture to black. */}
+      {!foregroundOnly && <rect width={W} height={H} fill="url(#vignette)" />}
 
       {/* Grain last, over everything, so the blurred cover behind and the
           vector scene in front share one texture and read as a single image. */}
