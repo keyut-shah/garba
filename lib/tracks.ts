@@ -2,7 +2,7 @@
 // AND playableInEmbed=true. If you add a track, verify it the same way or the
 // player silently dies on that entry.
 
-export type Phase = "aarti" | "traditional" | "falguni" | "nonstop";
+export type Phase = "traditional" | "falguni" | "nonstop";
 
 export type Track = {
   id: string;
@@ -13,30 +13,15 @@ export type Track = {
 };
 
 export const TRACKS: Track[] = [
-  // --- aarti: how every garba night actually opens ---
+  // --- traditional taali garba: the opener ---
+  // Naagar Nandji Na Laal leads now — it's the hook for whoever lands on the
+  // site first, including the old 8pm aarti slot (that phase is gone; there's
+  // no dedicated devotional opener anymore, this carries it).
   {
-    id: "U_DTkSAakVQ",
-    title: "Jai Adhyashakti",
-    artist: "Ratansinh Vaghela & Damyanti Barot",
-    seconds: 813,
-    phase: "aarti",
-  },
-
-  // --- traditional taali garba: the slow build ---
-  // Reordered so the same singer never opens back-to-back — Atul Purohit had
-  // two in a row.
-  {
-    id: "9SqGPYaZlk4",
-    title: "Garbo Maa No Ghumto Aayo",
-    artist: "Rakesh Barot",
-    seconds: 344,
-    phase: "traditional",
-  },
-  {
-    id: "6MpjP4w8Gtk",
-    title: "Tara Vina Shyam",
-    artist: "Atul Purohit",
-    seconds: 438,
+    id: "iraezTzB938",
+    title: "Naagar Nandji Na Laal",
+    artist: "Aditya Gadhvi & Kinjal Rajpriya",
+    seconds: 315,
     phase: "traditional",
   },
   {
@@ -53,11 +38,25 @@ export const TRACKS: Track[] = [
     seconds: 328,
     phase: "traditional",
   },
+  {
+    id: "fjQRohT_LFw",
+    title: "Moti Veraana",
+    artist: "Amit Trivedi feat. Osman Mir",
+    seconds: 261,
+    phase: "traditional",
+  },
 
   // --- Falguni: peak nostalgia, ~10pm ---
   // All-Gujarati now — the two Hindi Falguni Pathak tracks are gone, and this
-  // hour opens with three different singers instead of the same one three
+  // hour opens with four different singers instead of the same one three
   // times running.
+  {
+    id: "2l-JHpsRVJE",
+    title: "Sanedo",
+    artist: "Jignesh Barot, Maniraj Barot & Parth Thakkar",
+    seconds: 464,
+    phase: "falguni",
+  },
   {
     id: "ccqg6e2rfLU",
     title: "Gori Radha Ne Kalo Kaan",
@@ -84,12 +83,27 @@ export const TRACKS: Track[] = [
   // Chogada and Nagada Sang Dhol (the old "everyone knows this one" phase)
   // and Kamariya are gone — all three were Hindi film songs, and nobody at an
   // actual garba is dancing to Bollywood. This block now covers the whole
-  // stretch from midnight on.
+  // stretch from midnight on. Kinjal Dave and Jigardan Gadhavi each get two
+  // tracks here, kept apart so neither singer repeats back-to-back.
   {
     id: "Fi7fxozoDPY",
     title: "Aangadiye Aavo",
     artist: "Aditya Gadhvi & Bhoomi Trivedi",
     seconds: 252,
+    phase: "nonstop",
+  },
+  {
+    id: "NpiD70ZrZTc",
+    title: "Vichudo",
+    artist: "Kinjal Dave",
+    seconds: 210,
+    phase: "nonstop",
+  },
+  {
+    id: "9n7tWwa77mY",
+    title: "Ramo Re",
+    artist: "Jigardan Gadhavi, Janki Bodiwala & Kavya Limaye",
+    seconds: 230,
     phase: "nonstop",
   },
   {
@@ -100,10 +114,10 @@ export const TRACKS: Track[] = [
     phase: "nonstop",
   },
   {
-    id: "9n7tWwa77mY",
-    title: "Ramo Re",
-    artist: "Jigardan Gadhavi, Janki Bodiwala & Kavya Limaye",
-    seconds: 230,
+    id: "EG4gFxczkH8",
+    title: "Chaniyacholi",
+    artist: "Jigardan Gadhavi & Yati Upadhyay",
+    seconds: 214,
     phase: "nonstop",
   },
   {
@@ -116,7 +130,6 @@ export const TRACKS: Track[] = [
 ];
 
 export const PHASE_LABEL: Record<Phase, string> = {
-  aarti: "Aarti",
   traditional: "Taali garba",
   falguni: "The Falguni hour",
   nonstop: "Non-stop",
@@ -129,11 +142,10 @@ export function coverUrl(id: string) {
 
 /**
  * A real garba night has a shape. Drop the listener in at the point of the night
- * that matches the actual hour in India — aarti at 8pm, non-stop past midnight.
+ * that matches the actual hour in India — taali garba at 8pm, non-stop past midnight.
  */
 export function phaseForIstHour(hour: number): Phase {
-  if (hour >= 20 && hour < 21) return "aarti";
-  if (hour >= 21 && hour < 22) return "traditional";
+  if (hour >= 20 && hour < 22) return "traditional";
   if (hour >= 22 && hour < 24) return "falguni";
   if (hour >= 0 && hour < 5) return "nonstop";
   return "falguni"; // daytime: drop them straight into the good stuff

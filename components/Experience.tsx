@@ -145,6 +145,9 @@ export default function Experience() {
   const shareText = encodeURIComponent(
     `it's ${night.colour.toLowerCase()} night at the garba ground 🪔`
   );
+  const shareUrl = encodeURIComponent(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://garba-wtf.pages.dev"
+  );
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-between overflow-hidden">
@@ -195,7 +198,7 @@ export default function Experience() {
 
       <div className="fixed right-4 top-4 z-20 flex items-center gap-2 sm:right-5 sm:top-5">
         <a
-          href={`https://twitter.com/intent/tweet?text=${shareText}`}
+          href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 rounded-full p-2.5 text-sm font-medium text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)] transition hover:opacity-80 active:scale-95 sm:px-3 sm:py-2"
@@ -205,6 +208,17 @@ export default function Experience() {
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
           </svg>
           <span className="hidden sm:inline">Share</span>
+        </a>
+      </div>
+
+      <div className="fixed bottom-4 right-4 z-20 sm:bottom-5 sm:right-5">
+        <a
+          href="https://twitter.com/KeyutS"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] font-medium uppercase tracking-[0.22em] text-white/50 [text-shadow:0_1px_3px_rgba(0,0,0,0.95)] transition hover:text-white/80"
+        >
+          made by @KeyutS
         </a>
       </div>
 

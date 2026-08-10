@@ -39,8 +39,8 @@ Inspired by [saloon.wtf](https://saloon.wtf) by [@ybhrdwj](https://twitter.com/y
   `GarbaGround.tsx` before it reaches the DOM — including the animation delays,
   and including the values the painter's-algorithm sort compares.
 - **The night arc.** `lib/tracks.ts` tags each track with a phase and picks a
-  starting point from the current hour in IST: aarti at 8pm, the Falguni hour
-  around 10, non-stop past midnight.
+  starting point from the current hour in IST: taali garba from 8pm, the
+  Falguni hour around 10, non-stop past midnight.
 
 ## Adding a track
 

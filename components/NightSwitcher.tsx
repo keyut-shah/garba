@@ -21,7 +21,7 @@ export default function NightSwitcher({
         <div className="text-[13px] font-semibold tracking-wide text-white">
           Night {night.n} · {night.colour}
         </div>
-        <div className="text-[11px] text-white/75">
+        <div className="text-[11px] text-white/75 sm:text-sm">
           {night.goddess} · {night.date}
         </div>
       </div>
