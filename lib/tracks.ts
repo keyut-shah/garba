@@ -44,8 +44,17 @@ export const TRACKS: Track[] = [
     seconds: 212,
     phase: "traditional",
   },
+  {
+    id: "9SqGPYaZlk4",
+    title: "Garbo Maa No Ghumto Aayo",
+    artist: "Rakesh Barot",
+    seconds: 344,
+    phase: "traditional",
+  },
 
   // --- Falguni: peak nostalgia, ~10pm ---
+  // Trimmed to the two most-requested Hindi ones plus tonight's Gujarati one —
+  // this hour was skewing the whole night's language mix on its own.
   {
     id: "0tjVtYtZ384",
     title: "Maine Payal Hai Chhankai",
@@ -61,20 +70,6 @@ export const TRACKS: Track[] = [
     phase: "falguni",
   },
   {
-    id: "QIe_gL5Na8g",
-    title: "O Piya",
-    artist: "Falguni Pathak",
-    seconds: 255,
-    phase: "falguni",
-  },
-  {
-    id: "h6by4WdrJq0",
-    title: "Yaad Piya Ki Aane Lagi",
-    artist: "Falguni Pathak",
-    seconds: 331,
-    phase: "falguni",
-  },
-  {
     id: "rdDe6VWP-9s",
     title: "Kesariyo Rang Tane Lagyo",
     artist: "Falguni Pathak",
@@ -83,6 +78,8 @@ export const TRACKS: Track[] = [
   },
 
   // --- bollywood garba: everyone knows the steps ---
+  // Down to the two nobody would forgive skipping. This phase was 100% Hindi
+  // film music by definition — kept small on purpose.
   {
     id: "3X7x4Ye-tqo",
     title: "Nagada Sang Dhol",
@@ -91,24 +88,10 @@ export const TRACKS: Track[] = [
     phase: "bollywood",
   },
   {
-    id: "rz1hAo3Hiy4",
-    title: "Dholida",
-    artist: "Neha Kakkar, Udit Narayan & Palak Muchhal",
-    seconds: 230,
-    phase: "bollywood",
-  },
-  {
     id: "yr7JFNsz5dU",
     title: "Chogada",
     artist: "Darshan Raval & Asees Kaur",
     seconds: 275,
-    phase: "bollywood",
-  },
-  {
-    id: "WQfdwsPao9E",
-    title: "Udi Udi Jaye",
-    artist: "Sukhwinder Singh & Bhoomi Trivedi",
-    seconds: 151,
     phase: "bollywood",
   },
 
@@ -132,6 +115,20 @@ export const TRACKS: Track[] = [
     title: "Khalasi",
     artist: "Aditya Gadhvi x Achint",
     seconds: 264,
+    phase: "nonstop",
+  },
+  {
+    id: "Fi7fxozoDPY",
+    title: "Aangadiye Aavo",
+    artist: "Aditya Gadhvi & Bhoomi Trivedi",
+    seconds: 252,
+    phase: "nonstop",
+  },
+  {
+    id: "9n7tWwa77mY",
+    title: "Ramo Re",
+    artist: "Jigardan Gadhavi, Janki Bodiwala & Kavya Limaye",
+    seconds: 230,
     phase: "nonstop",
   },
 ];

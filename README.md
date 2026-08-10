@@ -62,6 +62,16 @@ Set the real origin, or link previews break everywhere:
 NEXT_PUBLIC_SITE_URL=https://your-domain.example
 ```
 
+Optional: total-visits tracking, separate from the live head count (which is
+only ever "right now"). dash.cloudflare.com → Analytics & Logs → Web
+Analytics → Add a site → the **manual JS snippet** option — a workers.dev
+subdomain isn't a zone Cloudflare manages DNS for, so the automatic-setup
+dropdown won't find it. No cookies, nothing to consent to, free on every plan.
+
+```bash
+NEXT_PUBLIC_CF_BEACON_TOKEN=your-token-here
+```
+
 `public/_headers` forces `Content-Type: image/png` on `/opengraph-image`, which
 the static export writes without a file extension. Don't delete it. Note those
 rules apply to **assets only** — never to Worker responses.

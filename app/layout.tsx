@@ -14,6 +14,14 @@ const gujarati = Noto_Sans_Gujarati({
 const SITE =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://garba-wtf.pages.dev";
 
+// Cloudflare Web Analytics: how many people actually visit, distinct from the
+// live head count above (which is only ever "right now"). Token comes from
+// dash.cloudflare.com → Analytics & Logs → Web Analytics → Add a site → the
+// JS snippet is the manual option, needed here because a workers.dev
+// subdomain isn't a zone Cloudflare manages DNS for, so the automatic-setup
+// dropdown can't see it. No cookies, nothing to consent to.
+const CF_BEACON_TOKEN = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
+
 const TITLE = "Garba Night";
 const DESC =
   "The society garba ground, in your browser. Nine nights, nine colours.";
@@ -51,7 +59,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${gujarati.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {children}
+        {CF_BEACON_TOKEN && (
+          <script
+            defer
+            src="https://static.cloudflare.com/beacon.min.js"
+            data-cf-beacon={`{"token": "${CF_BEACON_TOKEN}"}`}
+          />
+        )}
+      </body>
     </html>
   );
 }
