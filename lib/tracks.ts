@@ -46,8 +46,25 @@ export const TRACKS: Track[] = [
     phase: "traditional",
   },
 
-  // --- Falguni: peak nostalgia, ~10pm ---
-  // Sanedo splits the two Geeta Rabari tracks so she doesn't open back-to-back.
+  // --- Falguni: peak nostalgia, ~10pm — also the daytime default phase ---
+  // Hu Gokul No Govadiyo leads so daytime visitors hit it first. Ramo Re and
+  // Chaniyacholi moved here from non-stop (this is the middle of the night,
+  // not the last leg). Jigardan Gadhavi now has three tracks in this phase,
+  // spaced apart so none of them repeat back-to-back.
+  {
+    id: "Lj_2wb9akZM",
+    title: "Hu Gokul No Govadiyo",
+    artist: "Atul Purohit",
+    seconds: 302,
+    phase: "falguni",
+  },
+  {
+    id: "9n7tWwa77mY",
+    title: "Ramo Re",
+    artist: "Jigardan Gadhavi, Janki Bodiwala & Kavya Limaye",
+    seconds: 230,
+    phase: "falguni",
+  },
   {
     id: "5MMqwxJ3VBY",
     title: "Tetudo 2",
@@ -56,10 +73,24 @@ export const TRACKS: Track[] = [
     phase: "falguni",
   },
   {
+    id: "mN5atYdWd3o",
+    title: "Kanudo Shu Jaane Mari Preet",
+    artist: "Jigardan Gadhavi & Hardik Trivedi",
+    seconds: 207,
+    phase: "falguni",
+  },
+  {
     id: "2l-JHpsRVJE",
     title: "Sanedo",
     artist: "Jignesh Barot, Maniraj Barot & Parth Thakkar",
     seconds: 464,
+    phase: "falguni",
+  },
+  {
+    id: "EG4gFxczkH8",
+    title: "Chaniyacholi",
+    artist: "Jigardan Gadhavi & Yati Upadhyay",
+    seconds: 214,
     phase: "falguni",
   },
   {
@@ -76,20 +107,6 @@ export const TRACKS: Track[] = [
     title: "Vichudo",
     artist: "Kinjal Dave",
     seconds: 210,
-    phase: "nonstop",
-  },
-  {
-    id: "9n7tWwa77mY",
-    title: "Ramo Re",
-    artist: "Jigardan Gadhavi, Janki Bodiwala & Kavya Limaye",
-    seconds: 230,
-    phase: "nonstop",
-  },
-  {
-    id: "EG4gFxczkH8",
-    title: "Chaniyacholi",
-    artist: "Jigardan Gadhavi & Yati Upadhyay",
-    seconds: 214,
     phase: "nonstop",
   },
   {
